@@ -5,6 +5,9 @@ const router = Router();
 // Register
 
 router.post("/users/register", (request, response) => {
+  // TODO: Authorization
+  // TODO: Validasi Request Body
+  // TODO: Tambahkan data ke database
   response.json({
     token: "unique-token"
   })
