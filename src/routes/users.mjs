@@ -1,48 +1,28 @@
 import { Router } from "express";
+import UserController from "../controllers/userController.mjs";
+import { checkSchema } from "express-validator";
+import userSchema from "../schemas/userSchema.mjs";
 
 const router = Router();
 
 // Register
 
-router.post("/users/register", (request, response) => {
-  // TODO: Authorization
-  // TODO: Validasi Request Body
-  // TODO: Tambahkan data ke database
-  response.json({
-    token: "unique-token"
-  })
-})
+router.post("/users/register", checkSchema(userSchema.registerSchema), UserController.register)
 
 // Login
 
-router.post("/users/login", (request, response) => {
-  response.json({
-    token: "unique-token"
-  })
-})
+router.post("/users/login", UserController.login)
 
 // Logout
 
-router.delete("/users/logout", (request, response) => {
-  response.json({
-    msg: "Sucess"
-  })
-})
+router.delete("/users/logout", UserController.logout)
 
 // Update
 
-router.patch("/users", (request, response) => {
-  response.json({
-    username: "newligas"
-  })
-})
+router.patch("/users", UserController.update)
 
 // Delete
 
-router.delete("/users", (request, response) => {
-  response.json({
-    msg: "Sucess"
-  })
-})
+router.delete("/users", UserController.remove)
 
 export default router
