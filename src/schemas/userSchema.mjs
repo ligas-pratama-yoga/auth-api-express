@@ -13,6 +13,20 @@ const registerSchema = {
   }
 }
 
+const loginSchema = {
+  username: {
+    notEmpty: {
+      errorMessage: "Username cannot be empty!"
+    }
+  },
+  password: {
+    notEmpty: {
+      errorMessage: "Password cannot be empty!"
+    }
+  }
+}
+
 export default {
   registerSchema,
+  loginSchema
 }

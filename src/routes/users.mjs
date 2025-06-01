@@ -7,11 +7,19 @@ const router = Router();
 
 // Register
 
-router.post("/users/register", checkSchema(userSchema.registerSchema), UserController.register)
+router.post(
+  "/users/register",
+  checkSchema(userSchema.registerSchema),
+  UserController.register
+)
 
 // Login
 
-router.post("/users/login", UserController.login)
+router.post(
+  "/users/login",
+  checkSchema(userSchema.loginSchema),
+  UserController.login
+)
 
 // Logout
 
