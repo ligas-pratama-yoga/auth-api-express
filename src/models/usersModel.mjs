@@ -45,6 +45,10 @@ const update = (data) => {
   return pool.execute(`update users set ${updateData} where id = ?`, [data.id])
 }
 
+const deleteUser = (id) => {
+  return pool.execute("delete from users where id = ?", [id])
+}
+
 
 export default {
   addToken,
@@ -53,5 +57,6 @@ export default {
   findUsername,
   findUsernameOrAbort,
   findBy,
-  update
+  update,
+  deleteUser
 }

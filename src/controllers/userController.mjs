@@ -73,25 +73,49 @@ const update = async (request, response) => {
     const data = matchedData(request)
     const [findUser] = (await UsersModel.findBy("id", data.id))[0]
 
+    if(findUser == {}){
+      abort(response, 404, "NOT FOUND")
+    }
+
     if (tokenRequest != findUser.token) {
       return abort(response, 401, "NOT AUTHORIZED")
     }
     await UsersModel.update(data)
+    response.json({
+      msg: "Sucess"
+    })
   } catch (err) {
     response.status(500).json({
       msg: "SERVER ERROR",
       serverMsg: err
     })
   }
-  response.json({
-    msg: "Sucess"
-  })
 }
 
-const remove = (request, response) => {
-  response.json({
-    msg: "Sucess"
-  })
+const remove = async (request, response) => {
+  try {
+    const tokenRequest = request.headers.authorization
+    const data = matchedData(request)
+    const [findUser] = (await UsersModel.findBy("id", data.id))[0]
+
+    if(findUser.length == {}){
+      abort(response, 404, "NOT FOUND")
+    }
+
+    if (tokenRequest != findUser.token) {
+      return abort(response, 401, "NOT AUTHORIZED")
+    }
+    await UsersModel.deleteUser(data.id)
+
+    response.json({
+      msg: "Sucess"
+    })
+  } catch (err) {
+    response.status(500).json({
+      msg: "SERVER ERROR",
+      serverMsg: err
+    })
+  }
 }
 
 export default {
