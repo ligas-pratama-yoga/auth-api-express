@@ -1,15 +1,15 @@
 import { Router } from "express";
 import UserController from "../controllers/userController.mjs";
-import { checkSchema } from "express-validator";
-import userSchema from "../schemas/userSchema.mjs";
+import { validateUser } from "../middlewares/validation.mjs"
 
 const router = Router();
+
+router.use(validateUser)
 
 // Register
 
 router.post(
   "/users/register",
-  checkSchema(userSchema.registerSchema),
   UserController.register
 )
 
@@ -17,20 +17,28 @@ router.post(
 
 router.post(
   "/users/login",
-  checkSchema(userSchema.loginSchema),
   UserController.login
 )
 
 // Logout
 
-router.delete("/users/logout", UserController.logout)
+router.delete(
+  "/users/logout",
+  UserController.logout
+)
 
 // Update
 
-router.patch("/users", UserController.update)
+router.patch(
+  "/users",
+  UserController.update
+)
 
 // Delete
 
-router.delete("/users", UserController.remove)
+router.delete(
+  "/users",
+  UserController.remove
+)
 
 export default router

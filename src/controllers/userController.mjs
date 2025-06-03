@@ -1,71 +1,90 @@
 import { matchedData } from "express-validator"
 import UsersModel from "../models/usersModel.mjs"
-import { validationResult } from "express-validator"
+import { v4 as uuid4 } from "uuid"
+import { abort } from "../utils/functions.mjs"
 
 const register = async (request, response) => {
-  const result = validationResult(request)
+  const token = uuid4()
+  const data = { ...matchedData(request), token }
+  const [rows] = await UsersModel.findUsername(data.username)
 
-  if(!result.isEmpty()) {
-    const responseError = result.array()
-
-    let errors = {}
-
-    responseError.forEach(e => {
-      errors[e.path] = e.msg
-    })
-
-    return response.status(400).json({
-      title: "Invalid request body value",
-      errors: errors
-    })
+  if (rows.length != 0) {
+    abort(response, 409, "Username already exists")
   }
 
   try {
-    const data = matchedData(request)
     await UsersModel.create(data)
     response.status(201).json({
-      token: 'unique-token'
+      token: token
     })
-  } catch(err) {
-    console.log(err)
+  } catch (err) {
     response.status(500).json({
       msg: "SERVER ERROR",
     })
   }
-
 }
 
-const login = (request, response) => {
-  const result = validationResult(request)
+const login = async (request, response) => {
+  const token = uuid4()
+  try {
+    const data = matchedData(request)
 
-  if(!result.isEmpty()) {
-    const responseError = result.array()
+    const findUser = await UsersModel.findUsernameOrAbort(response, data.username)
 
-    let errors = {}
+    await UsersModel.addToken(findUser[0][0].id, token)
 
-    responseError.forEach(e => {
-      errors[e.path] = e.msg
+    response.json({
+      token: token
     })
+  } catch (err) {
+    response.status(500).json({
+      msg: "SERVER ERROR",
+      serverMsg: err
+    })
+  }
+}
 
-    return response.status(400).json({
-      title: "Invalid request body value",
-      errors: errors
+const logout = async (request, response) => {
+  try {
+    const tokenRequest = request.headers.authorization
+    const data = matchedData(request)
+    const [findUser] = (await UsersModel.findBy("id", data.id))[0]
+
+    if (tokenRequest != findUser.token) {
+      return abort(response, 401, "NOT AUTHORIZED")
+    }
+
+    await UsersModel.removeToken(request.body.id)
+
+    response.json({
+      msg: "Sucess"
+    })
+  } catch (err) {
+    response.status(500).json({
+      msg: "SERVER ERROR",
+      serverMsg: err
+    })
+  }
+}
+
+const update = async (request, response) => {
+  try {
+    const tokenRequest = request.headers.authorization
+    const data = matchedData(request)
+    const [findUser] = (await UsersModel.findBy("id", data.id))[0]
+
+    if (tokenRequest != findUser.token) {
+      return abort(response, 401, "NOT AUTHORIZED")
+    }
+    await UsersModel.update(data)
+  } catch (err) {
+    response.status(500).json({
+      msg: "SERVER ERROR",
+      serverMsg: err
     })
   }
   response.json({
-    token: "unique-token"
-  })
-}
-
-const logout = (request, response) => {
-  response.json({
     msg: "Sucess"
-  })
-}
-
-const update = (request, response) => {
-  response.json({
-    username: "newligas"
   })
 }
 

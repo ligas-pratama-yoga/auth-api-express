@@ -66,6 +66,14 @@ Headers :
 
 - Authorization: "token"
 
+Request Body
+
+```json
+{
+  "id": "current-id"
+}
+```
+
 Response Body Success
 
 ```json
