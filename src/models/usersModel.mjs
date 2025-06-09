@@ -1,6 +1,8 @@
+import bcrypt from "bcrypt"
 import pool from "./../config/database.mjs"
 import { abort } from "./../utils/functions.mjs"
 
+// Function untuk menambahkan token ke dalam user dengan id == id
 const addToken = (id, token) => {
   return pool.execute("update users set token = ? where id = ?", [token, id])
 }
@@ -12,7 +14,9 @@ const removeToken = (id) => {
 const create = (body) => {
   const { username, password, token } = body
 
-  return pool.execute("insert into users(username, password, token) values(?, ?, ?)", [username, password, token])
+  bcrypt.hash(password, 10).then(hash => {
+    return pool.execute("insert into users(username, password, token) values(?, ?, ?)", [username, hash, token])
+  }).catch(() => console.error("Something went wrong"))
 }
 
 const findUsername = (username) => {
@@ -35,13 +39,13 @@ const findBy = (key, value) => {
 const update = (data) => {
   let updateData = ""
 
-  for(let key in data){
-    if( key == "authorization" || key == "id" || data[key] == undefined) continue
+  for (let key in data) {
+    if (key == "authorization" || key == "id" || data[key] == undefined) continue
     updateData += ` ${key} = '${data[key]}', `
   }
 
   updateData = updateData.replace(/\,\s+$/, '')
-  
+
   return pool.execute(`update users set ${updateData} where id = ?`, [data.id])
 }
 

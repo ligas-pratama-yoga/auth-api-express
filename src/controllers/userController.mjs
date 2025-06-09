@@ -1,6 +1,7 @@
 import { matchedData } from "express-validator"
 import UsersModel from "../models/usersModel.mjs"
 import { v4 as uuid4 } from "uuid"
+import bcrypt from "bcrypt"
 import { abort } from "../utils/functions.mjs"
 
 const register = async (request, response) => {
@@ -30,11 +31,13 @@ const login = async (request, response) => {
     const data = matchedData(request)
 
     const findUser = await UsersModel.findUsernameOrAbort(response, data.username)
+    bcrypt.compare(data.password, findUser[0][0].password).then(async (result) => {
+      if(!result) return abort(response, 400, "Wrong username or password")
+      await UsersModel.addToken(findUser[0][0].id, token)
 
-    await UsersModel.addToken(findUser[0][0].id, token)
-
-    response.json({
-      token: token
+      response.json({
+        token: token
+      })
     })
   } catch (err) {
     response.status(500).json({
@@ -98,7 +101,7 @@ const remove = async (request, response) => {
     const data = matchedData(request)
     const [findUser] = (await UsersModel.findBy("id", data.id))[0]
 
-    if(findUser.length == {}){
+    if(findUser.length == 0){
       abort(response, 404, "NOT FOUND")
     }
 
